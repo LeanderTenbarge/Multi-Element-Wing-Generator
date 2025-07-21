@@ -23,14 +23,14 @@ This provides us the following benefits/features.
 ## Installation
 In order to utilize the necessary modules and packages for this code to work we are using python 3.10 managed through a conda environment.
 ### Copying the Repository to the Current Directory
-''' bash 
+```bash 
 git clone https://github.com/yourusername/Multi-Element-Wing-Generator.git
 cd Multi-Element-Wing-Generator
 
 ### Utilizing the .yml file
-'''bash
+```bash
 conda env create -f environment.yml
 
 ### Activating the enviroment
-'''bash
+```bash
 conda activate ocp-env
