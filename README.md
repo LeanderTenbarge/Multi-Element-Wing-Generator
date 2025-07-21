@@ -12,14 +12,14 @@ This provides us the following benefits/features.
 5. Scalable Geometry Export in .STEP,.IGES ,and STL file configurations.
 
 ## Table of Contents:
-1. Installation Methods
-2. General Outline of the Problem
-3. Shape Transformations 
-4. PCHIP Interpolations
-5. NACA 4 Digit Camber Function
-6. Case Folder Structure and explanation
-7. Example Usage and Photos
-8. Future plans and Licensing
+[Installation Methods](##installation)
+[General Outline of the Problem](##general-outline)
+[Shape Transformations](##class-shape-transformation)
+[PCHIP Interpolations](##polynomial-hermite-piecewise-interpolation-(pchip))
+[NACA 4 Digit Camber Function](##naca-camber-function)
+[Case Folder Structure and explanation](##case-folder-structure-and-explanation)
+[Example Usage and Photos](##examples)
+[Future plans and Licensing](##future-plans)
 
 ## Installation
  - In order to utilize the necessary modules and packages for this code to work we are using python 3.10 managed through a conda environment.
@@ -38,42 +38,46 @@ conda env create -f environment.yml
 ```bash
 conda activate ocp-env
 ```
+## General Outline
 ## Class Shape Transformations 
 - The CST method allows us to model a fully parameterized airfoil shape \(y(x)\) as the product of a **class function** \(C(x)\) and a **shape function** \(S(x)\).
 - The shape coefficients determine the local behavior of the airfoil surface at each control point. In this implementation, we use six upper and six lower shape coefficients, allowing independent control over the thickness distribution of the upper and lower surfaces, respectively.
 
+![CST Representation of a symmetric airfoil](images/UpperLowerAirfoil.png)
+
 ### Class Function
-
-Defines the general class of shape (e.g., airfoils, flat plates, etc.):
-
+- Defines the general behaviour (class) of the geometry by evaluating the a class function with multiple parameters controlling leading and trailing edge behavior.
 $$
 C(x) = x^{N_1} (1 - x)^{N_2}
 $$
-
 - \(x\) is the normalized chordwise location \([0,1]\)
 - \(N_1\) and \(N_2\) are shape parameters controlling leading and trailing edge behavior
-
+  
 ### Shape Function
-
-Typically represented by a Bernstein polynomial expansion:
+- Utilizes a bernstein polynomial expansion, a popular method used in spline based formulations combined with coefficients to modify the shape of the geometry.
+- The control points are evenly distributed along the x-axis from 0 to 1. These points represent the locations where each coefficient influences the airfoil's thickness. While using more coefficients provides finer control over the shape, it also increases the complexity of optimization routines. Therefore, six coefficients per surface are typically sufficient.
 
 $$
 S(x) = \sum_{i=0}^{n} A_i \, B_{i,n}(x)
 $$
-
-where
-
 $$
 B_{i,n}(x) = \binom{n}{i} x^{i} (1 - x)^{n - i}
 $$
 
-- \(A_i\) are the shape coefficients (control points)
+- \(A_i\) are the shape coefficients at the control points
 - \(B_{i,n}(x)\) is the Bernstein basis polynomial of degree \(n\)
 
 ### Full Expression
-
-Combining these gives the CST shape:
+Combining these gives the CST Function allowing us to Generate custom Airfoil Profiles. 
 
 $$
 y(x) = x^{N_1} (1 - x)^{N_2} \sum_{i=0}^n A_i \binom{n}{i} x^{i} (1 - x)^{n - i}
 $$
+
+### Examples
+## Polynomial Hermite Piecewise Interpolation (PCHIP)
+## NACA Camber Function
+## Case Folder Structure and Explanation
+## Examples 
+## Future Plans
+
