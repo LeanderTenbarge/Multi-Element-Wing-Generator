@@ -13,15 +13,15 @@ This provides us the following benefits/features.
 
 ## Table of Contents:
 1. Installation Methods
-2. Class Shape Transformations
-3. PCHIP Interpolations
-4. General Outline of the Problem
+2. General Outline of the Problem
+3. Shape Transformations 
+4. PCHIP Interpolations
 5. Case Folder Structure and explanation
 6. Example Usage and Photos
 7. Future plans and Licensing
 
 ## Installation
-In order to utilize the necessary modules and packages for this code to work we are using python 3.10 managed through a conda environment.
+ - In order to utilize the necessary modules and packages for this code to work we are using python 3.10 managed through a conda environment.
 ### Copying the Repository to the Current Directory
 ```bash 
 git clone https://github.com/yourusername/Multi-Element-Wing-Generator.git
@@ -37,3 +37,47 @@ conda env create -f environment.yml
 ```bash
 conda activate ocp-env
 ```
+## Class Shape Transformations 
+The CST method models an airfoil shape \(y(x)\) as the product of a **class function** \(C(x)\) and a **shape function** \(S(x)\):
+
+$$
+y(x) = C(x) \times S(x)
+$$
+
+where:
+
+### Class Function
+
+Defines the general class of shape (e.g., airfoils, flat plates, etc.):
+
+$$
+C(x) = x^{N_1} (1 - x)^{N_2}
+$$
+
+- \(x\) is the normalized chordwise location \([0,1]\)
+- \(N_1\) and \(N_2\) are shape parameters controlling leading and trailing edge behavior
+
+### Shape Function
+
+Typically represented by a Bernstein polynomial expansion:
+
+$$
+S(x) = \sum_{i=0}^{n} A_i \, B_{i,n}(x)
+$$
+
+where
+
+$$
+B_{i,n}(x) = \binom{n}{i} x^{i} (1 - x)^{n - i}
+$$
+
+- \(A_i\) are the shape coefficients (control points)
+- \(B_{i,n}(x)\) is the Bernstein basis polynomial of degree \(n\)
+
+### Full Expression
+
+Combining these gives the CST shape:
+
+$$
+y(x) = x^{N_1} (1 - x)^{N_2} \sum_{i=0}^n A_i \binom{n}{i} x^{i} (1 - x)^{n - i}
+$$
