@@ -19,3 +19,18 @@ This provides us the following benefits/features.
 5. Case Folder Structure and explanation
 6. Example Usage and Photos
 7. Future plans and Licensing
+
+## Installation
+In order to utilize the necessary modules and packages for this code to work we are using python 3.10 managed through a conda environment.
+### Copying the Repository to the Current Directory
+''' bash 
+git clone https://github.com/yourusername/Multi-Element-Wing-Generator.git
+cd Multi-Element-Wing-Generator
+
+### Utilizing the .yml file
+'''bash
+conda env create -f environment.yml
+
+### Activating the enviroment
+'''bash
+conda activate ocp-env
