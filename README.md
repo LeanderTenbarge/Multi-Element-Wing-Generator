@@ -16,9 +16,10 @@ This provides us the following benefits/features.
 2. General Outline of the Problem
 3. Shape Transformations 
 4. PCHIP Interpolations
-5. Case Folder Structure and explanation
-6. Example Usage and Photos
-7. Future plans and Licensing
+5. NACA 4 Digit Camber Function
+6. Case Folder Structure and explanation
+7. Example Usage and Photos
+8. Future plans and Licensing
 
 ## Installation
  - In order to utilize the necessary modules and packages for this code to work we are using python 3.10 managed through a conda environment.
@@ -38,13 +39,8 @@ conda env create -f environment.yml
 conda activate ocp-env
 ```
 ## Class Shape Transformations 
-The CST method models an airfoil shape \(y(x)\) as the product of a **class function** \(C(x)\) and a **shape function** \(S(x)\):
-
-$$
-y(x) = C(x) \times S(x)
-$$
-
-where:
+- The CST method allows us to model a fully parameterized airfoil shape \(y(x)\) as the product of a **class function** \(C(x)\) and a **shape function** \(S(x)\).
+- The shape coefficients determine the local behavior of the airfoil surface at each control point. In this implementation, we use six upper and six lower shape coefficients, allowing independent control over the thickness distribution of the upper and lower surfaces, respectively.
 
 ### Class Function
 
