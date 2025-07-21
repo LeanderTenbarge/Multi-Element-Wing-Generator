@@ -26,11 +26,14 @@ In order to utilize the necessary modules and packages for this code to work we 
 ```bash 
 git clone https://github.com/yourusername/Multi-Element-Wing-Generator.git
 cd Multi-Element-Wing-Generator
+```
 
 ### Utilizing the .yml file
 ```bash
 conda env create -f environment.yml
+```
 
 ### Activating the enviroment
 ```bash
 conda activate ocp-env
+```
