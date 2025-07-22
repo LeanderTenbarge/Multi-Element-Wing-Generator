@@ -1,6 +1,6 @@
 # Multi-Element-Wing-Generator
 ## Overview
-- The main motivation for this project is to develop parametric modeling techniques of a multi-element wing structure using a novel combination of:
+- The main motivation for this project is to develop parametric modeling techniques of a multi-element wing structure with the goal of streamlining design and optimization. This is achieved with a novel combination of the following. 
 
 1. Class Shape Transformations (CST)
    
@@ -16,7 +16,6 @@
 
 ## Table of Contents:
 [Installation Methods](#installation)
-[General Outline of the Problem](#general-outline)
 [Shape Transformations](#class-shape-transformation)
 [PCHIP Interpolations](#polynomial-hermite-piecewise-interpolation)
 [Case Folder Structure and explanation](#case-folder-structure-and-explanation)
@@ -42,8 +41,6 @@ conda env create -f environment.yml
 ```bash
 conda activate ocp-env
 ```
-## General Outline
-
 ---
 
 ## Class Shape Transformation 
@@ -169,7 +166,13 @@ $$
   - **Horizontal Offsets**, the distance from the trailing or leading edge to the respective edge of the endplate.
   - **Vertical Offset Upper**, the distance from the trailing or leading edge to the upper surface of the endplate.
   - **Vertical Offset Lower**, the distance from the trailing or leading edge to the lower surface of the endplate.
+### The `Geometry/` Folder
+- This file contains the results of the script in the following formats.
+  1. `.step` 
+  2. `.iges` 
+  3. `.stl`
 
 ## Examples 
+
 ## Future Plans
 
