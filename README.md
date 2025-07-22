@@ -12,20 +12,20 @@ This provides us the following benefits/features.
 5. Scalable Geometry Export in .STEP,.IGES ,and STL file configurations.
 
 ## Table of Contents:
-[Installation Methods](##installation)
-[General Outline of the Problem](##general-outline)
-[Shape Transformations](##class-shape-transformation)
-[PCHIP Interpolations](##polynomial-hermite-piecewise-interpolation-(pchip))
-[NACA 4 Digit Camber Function](##naca-camber-function)
-[Case Folder Structure and explanation](##case-folder-structure-and-explanation)
-[Example Usage and Photos](##examples)
-[Future plans and Licensing](##future-plans)
+[Installation Methods](#installation)
+[General Outline of the Problem](#general-outline)
+[Shape Transformations](#class-shape-transformation)
+[PCHIP Interpolations](#polynomial-hermite-piecewise-interpolation)
+[NACA 4 Digit Camber Function](#naca-camber-function)
+[Case Folder Structure and explanation](#case-folder-structure-and-explanation)
+[Example Usage and Photos](#examples)
+[Future plans and Licensing](#future-plans)
 
 ## Installation
  - In order to utilize the necessary modules and packages for this code to work we are using python 3.10 managed through a conda environment.
 ### Copying the Repository to the Current Directory
 ```bash 
-git clone https://github.com/yourusername/Multi-Element-Wing-Generator.git
+git clone https://github.com/LeanderTenbarge/Multi-Element-Wing-Generator.git
 cd Multi-Element-Wing-Generator
 ```
 
@@ -39,7 +39,7 @@ conda env create -f environment.yml
 conda activate ocp-env
 ```
 ## General Outline
-## Class Shape Transformations 
+## Class Shape Transformation 
 - The CST method allows us to model a fully parameterized airfoil shape \(y(x)\) as the product of a **class function** \(C(x)\) and a **shape function** \(S(x)\).
 - The shape coefficients determine the local behavior of the airfoil surface at each control point. In this implementation, we use six upper and six lower shape coefficients, allowing independent control over the thickness distribution of the upper and lower surfaces, respectively.
 
@@ -47,9 +47,11 @@ conda activate ocp-env
 
 ### Class Function
 - Defines the general behaviour (class) of the geometry by evaluating the a class function with multiple parameters controlling leading and trailing edge behavior.
+  
 $$
 C(x) = x^{N_1} (1 - x)^{N_2}
 $$
+
 - \(x\) is the normalized chordwise location \([0,1]\)
 - \(N_1\) and \(N_2\) are shape parameters controlling leading and trailing edge behavior
   
@@ -75,7 +77,7 @@ y(x) = x^{N_1} (1 - x)^{N_2} \sum_{i=0}^n A_i \binom{n}{i} x^{i} (1 - x)^{n - i}
 $$
 
 ### Examples
-## Polynomial Hermite Piecewise Interpolation (PCHIP)
+## Polynomial Hermite Piecewise Interpolation
 ## NACA Camber Function
 ## Case Folder Structure and Explanation
 ## Examples 
