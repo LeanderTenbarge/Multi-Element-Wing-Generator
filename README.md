@@ -42,6 +42,7 @@ conda activate ocp-env
 ## Class Shape Transformation 
 - The CST method allows us to model a fully parameterized airfoil shape \(y(x)\) as the product of a **class function** \(C(x)\) and a **shape function** \(S(x)\).
 - The shape coefficients determine the local behavior of the airfoil surface at each control point. In this implementation, we use six upper and six lower shape coefficients, allowing independent control over the thickness distribution of the upper and lower surfaces, respectively.
+- One of the most useful benefits of this method is that it removes the need for an explicit camber function removing multiple optimization parameters without sacrificing functionality.
 
 ![CST Representation of a symmetric airfoil](images/UpperLowerAirfoil.png)
 
@@ -56,9 +57,8 @@ $$
 - \(N_1\) and \(N_2\) are shape parameters controlling leading and trailing edge behavior
   
 ### Shape Function
-- Utilizes a bernstein polynomial expansion, a popular method used in spline based formulations combined with coefficients to modify the shape of the geometry.
-- The control points are evenly distributed along the x-axis from 0 to 1. These points represent the locations where each coefficient influences the airfoil's thickness. While using more coefficients provides finer control over the shape, it also increases the complexity of optimization routines. Therefore, six coefficients per surface are typically sufficient.
-
+- Utilizes a Bernstein polynomial expansion—a widely used approach in spline-based formulations—combined with shape coefficients to define and modify the geometry.
+- Control points are uniformly distributed along the x-axis from 0 to 1, representing locations where each coefficient influences the airfoil's shape. Increasing the number of coefficients allows for finer control, but also raises the complexity of optimization. In practice, six coefficients per surface (upper and lower) provide a good balance between flexibility and simplicity.
 $$
 S(x) = \sum_{i=0}^{n} A_i \, B_{i,n}(x)
 $$
@@ -96,8 +96,6 @@ $$
 
 - To create a curve using PCHIP, we start by defining a set of key points through which the curve must pass. The PCHIP algorithm then constructs a smooth, piecewise interpolation between these points.
 - This method is particularly well-suited for aerodynamic applications because it maintains stability and smoothness without introducing oscillations—preserving realistic shape transitions that are critical for performance.
-
-## NACA Camber Function
 ## Case Folder Structure and Explanation
 ## Examples 
 ## Future Plans
