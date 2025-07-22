@@ -97,6 +97,10 @@ $$
 - To create a curve using PCHIP, we start by defining a set of key points through which the curve must pass. The PCHIP algorithm then constructs a smooth, piecewise interpolation between these points.
 - This method is particularly well-suited for aerodynamic applications because it maintains stability and smoothness without introducing oscillations—preserving realistic shape transitions that are critical for performance.
 ## Case Folder Structure and Explanation
+- The Case File Structure is composed of 3 main folders, these are the Wings, Endplates, and Geometry folders.
+### The Wings folder
+- The Wings folder contains smaller subdirectories named numerically for the role (Main, flap, etc) of that specific element. Each of these Subdirectories Contains 3 .CSV format files (UpperInput, LowerInput, and parameters) which define points for the PCHIP interpolation along the span of the wing for that specific parameter.
+
 ## Examples 
 ## Future Plans
 
