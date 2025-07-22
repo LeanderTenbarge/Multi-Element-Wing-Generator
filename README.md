@@ -66,8 +66,8 @@ $$
 B_{i,n}(x) = \binom{n}{i} x^{i} (1 - x)^{n - i}
 $$
 
-- \(A_i\) are the shape coefficients at the control points
-- \(B{_i,n}(x)\) is the Bernstein basis polynomial of degree \(n\)
+- $$\ A_i \$$ are the shape coefficients at the control points
+- $$\ B_{i,n}(x) \$$ is the Bernstein basis polynomial of degree \(n\)
 
 
 ### Full Expression
@@ -83,6 +83,20 @@ $$
 ![CSTExample2](images/CSTEX2.png)
 
 ## Polynomial Hermite Piecewise Interpolation
+- The ability to control airfoil profiles using CST coefficients enables a wide range of 2D analysis and optimization. However, 2D analysis is inherently limited, as it neglects spanwise behavior, omitting critical information from the aerodynamic performance. In contrast, 3D analysis allows us to optimize the interaction between the wing and the endplate by examining pressure distributions across the wing surface and varying the geometry to maximize lift generation across the entire system.
+- The solution to varying the CST coefficients across the span of the wing arises in Polynomial Hermite Piecewise Interpolation or most commonly called PCHIP.
+### Why PCHIP?
+- **Smooth and Monotonic:**  Unlike other interpolation methods (such as cubic splines), PCHIP preserves monotonicity and avoids overshooting — a critical property for maintaining realistic aerodynamic shapes.
+
+- **Derivative Control:**  PCHIP ensures continuous first derivatives, resulting in smooth and stable transitions between adjacent cross-sections.
+
+- **Spanwise Adaptability:**  By applying PCHIP across the wing span, CST coefficients can vary smoothly, enabling the generation of twisted, tapered, or otherwise customized wing sections.
+
+### How Does It Work?
+
+- To create a curve using PCHIP, we start by defining a set of key points through which the curve must pass. The PCHIP algorithm then constructs a smooth, piecewise interpolation between these points.
+- This method is particularly well-suited for aerodynamic applications because it maintains stability and smoothness without introducing oscillations—preserving realistic shape transitions that are critical for performance.
+
 ## NACA Camber Function
 ## Case Folder Structure and Explanation
 ## Examples 
