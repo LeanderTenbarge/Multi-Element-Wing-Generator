@@ -67,7 +67,8 @@ B_{i,n}(x) = \binom{n}{i} x^{i} (1 - x)^{n - i}
 $$
 
 - \(A_i\) are the shape coefficients at the control points
-- \(B_{i,n}(x)\) is the Bernstein basis polynomial of degree \(n\)
+- \(B{_i,n}(x)\) is the Bernstein basis polynomial of degree \(n\)
+
 
 ### Full Expression
 Combining these gives the CST Function allowing us to Generate custom Airfoil Profiles. 
@@ -77,6 +78,10 @@ y(x) = x^{N_1} (1 - x)^{N_2} \sum_{i=0}^n A_i \binom{n}{i} x^{i} (1 - x)^{n - i}
 $$
 
 ### Examples
+- These are some Feasible examples one might create utilizing this method of manipulating airfoil geometry.
+![CSTExample1](images/CSTEX1.png)
+![CSTExample2](images/CSTEX2.png)
+
 ## Polynomial Hermite Piecewise Interpolation
 ## NACA Camber Function
 ## Case Folder Structure and Explanation
