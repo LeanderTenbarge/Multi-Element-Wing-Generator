@@ -6,7 +6,7 @@
    
 2. Piecewise Cubic Hermite Interpolating Polynomials (PCHIP).
 
- - This provides us the following benefits/features.
+This provides us the following benefits/features.
 
 1. Flexible and efficient fine tuning capabilities allowing for efficient design work flow.
 2. Adaptible and versatile enough for coupling with optimization routines.
