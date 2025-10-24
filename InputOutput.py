@@ -2,11 +2,6 @@ import pandas as pd
 import numpy as np
 import os 
 from scipy.interpolate import PchipInterpolator
-from OCP.STEPControl import STEPControl_Writer, STEPControl_AsIs
-from OCP.StlAPI import StlAPI_Writer
-from OCP.IGESControl import IGESControl_Writer
-from OCP.IFSelect import IFSelect_RetDone
-from OCP.BRepMesh import BRepMesh_IncrementalMesh
 
 
 
@@ -75,34 +70,4 @@ def parseEndPlate(FilePath):
     # Vertically stack the answers and return the array of information
     os.chdir(FilePath)
     return np.vstack(data)
-
-def Export(FusedGeometry,filename,FilePath):
-    ExportPath = os.path.join(FilePath,'GeometryFiles')
-    os.chdir(ExportPath)
-
-    # Export STEP
-    step_writer = STEPControl_Writer()
-    step_writer.Transfer(FusedGeometry, STEPControl_AsIs)
-    step_writer.Write(f"{filename}.step")
-    
-
-    # Export IGES
-    iges_writer = IGESControl_Writer()
-    iges_writer.AddShape(FusedGeometry)
-    iges_writer.Write(f"{filename}.iges")
-
-
-    #Mesh before STL export
-    mesh = BRepMesh_IncrementalMesh(FusedGeometry, 0.00001) # Mesh Density
-    mesh.Perform()
-
-    # Export STL
-    stl_writer = StlAPI_Writer()
-    stl_writer.ASCIIMode = False  
-    stl_writer.Write(FusedGeometry , f"{filename}.stl")
-
-    os.chdir(FilePath)
-
-
-
 
