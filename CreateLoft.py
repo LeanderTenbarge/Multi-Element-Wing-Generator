@@ -1,21 +1,25 @@
-from OCP.gp import gp_Pnt,gp_Vec, gp_Trsf
-from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeEdge, BRepBuilderAPI_MakeWire, BRepBuilderAPI_MakeFace
-from OCP.BRepOffsetAPI import BRepOffsetAPI_ThruSections
-from OCP.BRepPrimAPI import BRepPrimAPI_MakePrism
-from OCP.BRepAlgoAPI import BRepAlgoAPI_Fuse
-from OCP.BRepAlgoAPI import BRepAlgoAPI_Fuse
-from OCP.BRepBuilderAPI import BRepBuilderAPI_Transform
-from OCP.BRepMesh import BRepMesh_IncrementalMesh
+
+import gmsh
 import numpy as np
 import WingLogic
 
-def Scale(Scale,Shape):
-    trsf = gp_Trsf()
-    trsf.SetScale(gp_Pnt(0,0,0),Scale)
-    return BRepBuilderAPI_Transform(Shape,trsf,True).Shape()
+# Fuses and Scales the Entire Geometry around the origin (0,0,0):
+def fuseScale(Scale,Wings,Endplates): 
+    
+    #Fusing the Components:
+    Wings = Wings + Endplates
+    Shape = Wings[0]
+    for tag in Wings[1:]:
+        Shape, _ = gmsh.model.occ.fuse(Shape, tag, removeObject=True, removeTool=True)
+    
+    # Dialating the Fused Components:
+    gmsh.model.occ.dilate(Shape,0,0,0,Scale,Scale,Scale)
+    gmsh.model.occ.synchronize()
+    
+    return Shape
 
 # Creates the OCC wireFrame objects from edges and points
-def CreateWireFrame(WingSections):
+def createWireFrame(WingSections):
 
     # Determine the max number of foil profiles across all spanwise sections
     TotalFoils = max(len(section.coordinates) for section in WingSections)
@@ -31,125 +35,156 @@ def CreateWireFrame(WingSections):
                 continue
 
             try:
-                points = [gp_Pnt(*WingSections[i].coordinates[j][k]) for k in range(WingSections[i].coordinates[j].shape[0])]
-                
-                # Create edges between consecutive points
-                edges = [BRepBuilderAPI_MakeEdge(points[k], points[k + 1]).Edge()
-                         for k in range(len(points) - 1)]
+                # Creating the points:
+                points = [gmsh.model.occ.addPoint(WingSections[i].coordinates[j][k][0],WingSections[i].coordinates[j][k][1],WingSections[i].coordinates[j][k][2],) for k in range(WingSections[i].coordinates[j].shape[0])]
 
-                # Build wire from edges
-                wire_maker = BRepBuilderAPI_MakeWire()
-                for edge in edges:
-                    wire_maker.Add(edge)
-                wires[i, j] = wire_maker.Wire()
+                # Create Lines between consecutive points:
+                lines = [gmsh.model.occ.addLine(points[k], points[k + 1]) for k in range(len(points) - 1)]
+
+                # Create the Wire:
+                wire = gmsh.model.occ.addWire(lines)
+                wires[i, j] = (1, wire)
 
             except Exception:
                 wires[i,j] = None
-            
+
     return wires
 
-# Takes the Wires and returns a list of Loft objects.
-def BuildLoft(wires):
+def buildLoft(wires):
     LoftedSurfaces = []
 
-    # Constructs the Lofts
-    for j in range(wires.shape[1]):
 
-        # Creating the initial Lofts for each Element
-        loft = BRepOffsetAPI_ThruSections(True, False, 1e-6)
-        valid_wires = 0  # Track how many wires have been added
 
-        for i in range(wires.shape[0]):
+    # Looping over the Elements
+    for j in range(wires.shape[1]):  
+        loft_sections = []
+        valid_wires = 0
+
+        #Looping over the spanwise profiles
+        for i in range(wires.shape[0]):  
             wire = wires[i, j]
 
+            # Determining if the section is valid
             if wire is not None:
-                loft.AddWire(wire)
-                valid_wires += 1
+                if isinstance(wire, tuple) and len(wire) == 2:
+                    loft_sections.append(wire[1])  
+                    valid_wires += 1
+                else:
+                    continue
 
             elif i != 0 and wires[i-1, j] is not None:
                 if valid_wires >= 2:
-                    loft.Build()
-                    LoftedSurfaces.append(loft.Shape())
-                loft = BRepOffsetAPI_ThruSections(True, False, 1e-6)
+                    loft = gmsh.model.occ.addThruSections(loft_sections, makeSolid=True)
+                    LoftedSurfaces.append(loft)
+
+                # Reset for next sequence
+                loft_sections = []
                 valid_wires = 0
                 continue
 
-        # Catch case where the final wire sequence reaches the end without hitting None
-        if valid_wires >= 2:
-            loft.Build()
-            LoftedSurfaces.append(loft.Shape())
 
+        # Catch case where the final wire sequence reaches the end
+        if valid_wires >= 2:
+            loft = gmsh.model.occ.addThruSections(loft_sections, makeSolid=True)
+            LoftedSurfaces.append(loft)
+
+    gmsh.model.occ.synchronize()
     return LoftedSurfaces
 
-# Constructing the EndPlates
-def BuildEndplate(InterpolatorArray,DataArray):
+def buildEndplate(InterpolatorArray, DataArray):
     Endplates = []
- 
-    #Determining the kernel for the theoretical wing section. 
+
+    # Determining the kernel for the theoretical wing section. 
     kernel = np.zeros_like(InterpolatorArray)
-    
-    # Needs to be a for Loop for the different columns in Data Array
+
     for i in range(np.shape(DataArray)[1]):
         for j in range(np.shape(InterpolatorArray)[0]):
             for k in range(np.shape(InterpolatorArray)[1]):
-                kernel[j,k] = InterpolatorArray[j,k](DataArray[7,i])
+                kernel[j, k] = InterpolatorArray[j, k](DataArray[7, i])
 
-        section = WingLogic.wing_section(kernel,DataArray[7,i])
+        section = WingLogic.wing_section(kernel, DataArray[7, i])
 
         MaximumValue = section.coordinates[-1][-1]
-        Index = int(len(section.coordinates[-1])/2)
+        Index = int(len(section.coordinates[-1]) / 2)
         MinimumValue = section.coordinates[0][Index]
-     
+
         # Determining the points needed for the actual geometry.
-        PointOne = MinimumValue + np.array([-DataArray[0, i],DataArray[1, i],0.0])
-        PointTwo = MinimumValue + np.array([-DataArray[0, i],-DataArray[2, i],0.0])
-        PointThree = MaximumValue + np.array([DataArray[3, i],DataArray[4, i],0.0])
-        PointFour = MaximumValue + np.array([DataArray[3, i],-DataArray[5, i],0.0])
+        PointOne = MinimumValue + np.array([-DataArray[0, i], DataArray[1, i], 0.0])
+        PointTwo = MinimumValue + np.array([-DataArray[0, i], -DataArray[2, i], 0.0])
+        PointThree = MaximumValue + np.array([DataArray[3, i], DataArray[4, i], 0.0])
+        PointFour = MaximumValue + np.array([DataArray[3, i], -DataArray[5, i], 0.0])
 
-        # Creating the Points in the Api
-        PointOne = gp_Pnt(PointOne[0],PointOne[1],PointOne[2])
-        PointTwo = gp_Pnt(PointTwo[0],PointTwo[1],PointTwo[2])
-        PointThree = gp_Pnt(PointThree[0],PointThree[1],PointThree[2])
-        PointFour = gp_Pnt(PointFour[0],PointFour[1],PointFour[2])
+        # Add points in Gmsh
+        p1 = gmsh.model.occ.addPoint(PointOne[0], PointOne[1], PointOne[2])
+        p2 = gmsh.model.occ.addPoint(PointTwo[0], PointTwo[1], PointTwo[2])
+        p3 = gmsh.model.occ.addPoint(PointThree[0], PointThree[1], PointThree[2])
+        p4 = gmsh.model.occ.addPoint(PointFour[0], PointFour[1], PointFour[2])
 
-        # Creating the Edges
-        edgeOne = BRepBuilderAPI_MakeEdge(PointOne,PointTwo).Edge()
-        edgeTwo = BRepBuilderAPI_MakeEdge(PointTwo,PointFour).Edge()
-        edgeThree = BRepBuilderAPI_MakeEdge(PointFour,PointThree).Edge()
-        edgeFour = BRepBuilderAPI_MakeEdge(PointThree,PointOne).Edge()
-            
-        #Creating the Wire
-        wire = BRepBuilderAPI_MakeWire(edgeOne,edgeTwo,edgeThree,edgeFour).Wire()
+        # Create edges
+        e1 = gmsh.model.occ.addLine(p1, p2)
+        e2 = gmsh.model.occ.addLine(p2, p4)
+        e3 = gmsh.model.occ.addLine(p4, p3)
+        e4 = gmsh.model.occ.addLine(p3, p1)
 
-        # Creating the Face
-        face = BRepBuilderAPI_MakeFace(wire).Face()
+        # Create wire
+        wire = gmsh.model.occ.addWire([e1, e2, e3, e4])
 
-        # Creating the the Extrude 
-        solid = BRepPrimAPI_MakePrism(face, gp_Vec(0, 0, DataArray[6,i])).Shape()
-        BRepMesh_IncrementalMesh(solid, 0.0002, True, 0.1, True)
-        Endplates.append(solid)
+        # Create face
+        face = gmsh.model.occ.addPlaneSurface([wire])
 
+        # Extrude the face (prism), extrude returns surface tags too. 
+        extrusion = gmsh.model.occ.extrude([(2, face)], 0, 0, DataArray[6, i])
+        solidTag = [tag for tag in extrusion if tag[0] == 3]
+        Endplates.append(solidTag)
+    
+
+    gmsh.model.occ.synchronize()
     return Endplates
 
-def CreateGeometry(Wings, Endplates):
-    # Fuse all wings
-    fused_wing = Wings[0]
-    for wing in Wings[1:]:
-        fuse_op = BRepAlgoAPI_Fuse(fused_wing, wing)
-        fuse_op.Build()
-        if fuse_op.IsDone():
-            fused_wing = fuse_op.Shape()
-        else:
-            pass
+def buildDomain(Height,Width,Ground,Forward,Backward,Scale):
+        
+        # Creating the groups for the name
+        surfaces = gmsh.model.getEntities(2)
+        tags = [tag for dim, tag in surfaces]
+        group = gmsh.model.addPhysicalGroup(2, tags)
+        gmsh.model.setPhysicalName(2, group, "Wing.NS")
+        
+        
+        
+        Domain = []
 
-    # Fuse all endplates
-    FusedGeometry = fused_wing
-    for endplate in Endplates:
-        fuse_op = BRepAlgoAPI_Fuse(FusedGeometry, endplate)
-        fuse_op.Build()
-        if fuse_op.IsDone():
-            FusedGeometry = fuse_op.Shape()
-        else:
-            pass
+        # Add points in Gmsh with the Scaled Coordinates
+        p1 = gmsh.model.occ.addPoint(-Forward*Scale,-Ground*Scale,0)
+        p2 = gmsh.model.occ.addPoint(-Forward*Scale,(Height-Ground)*Scale, 0 )
+        p3 = gmsh.model.occ.addPoint(Backward*Scale,(Height-Ground)*Scale, 0 )
+        p4 = gmsh.model.occ.addPoint(Backward*Scale,-Ground*Scale,0)
 
-    return FusedGeometry
+        # Create edges:
+        e1 = gmsh.model.occ.addLine(p1, p2)
+        e2 = gmsh.model.occ.addLine(p2, p3)
+        e3 = gmsh.model.occ.addLine(p3, p4)
+        e4 = gmsh.model.occ.addLine(p4, p1)
+
+        # Create wire:
+        wire = gmsh.model.occ.addWire([e1, e2, e3, e4])
+
+        # Create face
+        face = gmsh.model.occ.addPlaneSurface([wire])
+
+        # Extrude the face (prism), extrude returns surface tags too. 
+        extrusion = gmsh.model.occ.extrude([(2, face)], 0, 0, Width)
+        solidTag = [tag for tag in extrusion if tag[0] == 3]
+        gmsh.model.occ.synchronize()
+        Domain.append(solidTag)
+        return Domain
+
+def domainBoolean(Wing,Box):
+    Box = [sub[0] for sub in Box]
+    domainTags,_ = gmsh.model.occ.cut(objectDimTags=Box,toolDimTags=Wing, removeObject=True, removeTool=True)
+    gmsh.model.occ.synchronize()
+    return domainTags
+
+def writeGroups(Height,Width,Ground,Forward,Backward,Scale):
+    gmsh.model.occ.synchronize()
+    print(gmsh.model.occ.get_entities_in_bounding_box((Backward*Scale)/4,-1,-1,(Backward*Scale)/3,Height*Scale+1,Width*Scale+1,dim=3))
+    print(gmsh.model.occ.getEntitiesInBoundingBox((Backward*Scale)/4,-1,-1,(Backward*Scale)/3,Height*Scale+1,Width*Scale+1,dim=3))
