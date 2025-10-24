@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.special import comb
 import InputOutput
-import CreateLoft
+
 
 
 # Wing Section Class
@@ -18,8 +18,8 @@ class wing_section:
             if i != 0:
                 if self.element[i - 1] is not None:
                     chromosome[13], chromosome[14] = self.element[i - 1].return_max()
-                    chromosome[13] -= chromosome[15] #Overlap
-                    chromosome[14] += chromosome[16] #Slotgap
+                    chromosome[13] -= chromosome[15] 
+                    chromosome[14] += chromosome[16] 
                     
                 else:
                     # Skip or handle chaining when previous element is missing
@@ -43,7 +43,6 @@ class profile:
     def __init__(self,input_parameters):
         self.parameters_upper = np.array(input_parameters[0:7])
         self.parameters_lower = np.array(input_parameters[7:13])
-        #self.parameters_camber = np.array(input_parameters[12:14])
         self.parameters_angle = np.array((input_parameters[12]))
         self.parameters_offset = np.array(input_parameters[13:15])
         self.parameters_scale = np.array(input_parameters[17])
